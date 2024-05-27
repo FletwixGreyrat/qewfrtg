@@ -176,7 +176,7 @@ async def viborCMD(call: types.CallbackQuery, state: FSMContext):
     price_per_kg = await cursor.fetchone()
     price_per_kg = price_per_kg[0]
     async with state.proxy() as data:
-        data['price'] += int(value) * int(price_per_kg)
+        data['price'] += int(float(value) * int(price_per_kg))
 
     cursor = await db.execute("SELECT value FROM data WHERE key='цена_СДЭК_Москва'")
     sdek = await cursor.fetchone()
@@ -435,7 +435,7 @@ async def agreeAdminFSM(call: types.CallbackQuery, state: FSMContext):
             value = data['value']
             key = data['key']
 
-        await db.execute(f'UPDATE data SET value={value} WHERE key="{key}"')
+        await db.execute(f'UPDATE data SET value="{value}" WHERE key="{key}"')
         await db.commit()
         await db.close()
         await call.message.answer(f"Значение \"{key}\" успешно изменено")
