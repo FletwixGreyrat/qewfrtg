@@ -138,7 +138,7 @@ async def raschetFSMCMD(message: types.Message, state: FSMContext):
         return
     
     if not (message.text.isnumeric()):
-        await message.answer("Сообщение должно состоять только из цифр!", reply_markup=kb)
+        await message.answer("Сообщение джно состоять только из цифр!", reply_markup=kb)
         return
     
     db = await aiosqlite.connect('data.db')
@@ -147,7 +147,7 @@ async def raschetFSMCMD(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
         data["price"] = int(int(message.text) * float(uan[0]))
-        data["poizon"] = int(message.text) * float(uan[0])
+        data["poizon"] = int(int(message.text) * float(uan[0]))
 
     
 
@@ -172,11 +172,13 @@ async def viborCMD(call: types.CallbackQuery, state: FSMContext):
     value = await cursor.fetchone()
     value = value[0]
 
-    cursor = await db.execute("SELECT value FROM data WHERE key='цена_за_килограм'")
+    cursor = await db.execute("SELECT value FROM data WHERE key='цена_за_килограмм'")
     price_per_kg = await cursor.fetchone()
     price_per_kg = price_per_kg[0]
+    # print(int(float(value) * int(price_per_kg)))
     async with state.proxy() as data:
         data['price'] += int(float(value) * int(price_per_kg))
+        data['msk'] = int(float(value) * int(price_per_kg))
 
     cursor = await db.execute("SELECT value FROM data WHERE key='цена_СДЭК_Москва'")
     sdek = await cursor.fetchone()
@@ -231,6 +233,7 @@ async def dostCMD(call: types.CallbackQuery, state: FSMContext):
         data["price"] += pr
         price = data['price']
         poizon = int(data["poizon"])
+        msk = data['msk']
 
     await state.finish()
 
@@ -238,9 +241,6 @@ async def dostCMD(call: types.CallbackQuery, state: FSMContext):
     china = await cursor.fetchone()
     china = int(china[0])
 
-    cursor = await db.execute("SELECT value FROM data WHERE key='доставка_до_москвы'")
-    msk = await cursor.fetchone()
-    msk = int(msk[0])
 
     cursor = await db.execute("SELECT value FROM data WHERE key='процент_страховки'")
     strah = await cursor.fetchone()
