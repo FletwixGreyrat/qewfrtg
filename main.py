@@ -44,7 +44,7 @@ async def startCMD(message: types.Message):
     faq = await cursor.fetchone()
     faq = faq[0]
 
-    await message.answer(f"""Привет! Вы запустили бота Poizon Box.
+    await message.answer(f"""Привет! Вы запустили бота Mz_Poizon.
 
 Наш канал 👉🏻 https://t.me/{link}""")
     await message.answer("Выберите нужное действие:", reply_markup=startKB(owner=owner, otzivi=otzivi, faq=faq))
@@ -101,7 +101,7 @@ async def srokiCMD(call: types.CallbackQuery):
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton("В главное меню", callback_data="main_menu"))
     await call.message.edit_text("""Доставка до нашего склада в Китае занимает от 2 до 6 дней, затем доставка до Московского склада 12-25 дней, в среднем большинство партий идут 14 дней до Москвы.
-Далее если необходима пересылка в другой город мы передаем в Боксбери на следующий день.""", reply_markup=kb)
+Далее если необходима пересылка в другой город мы передаем в СДЭК на следующий день.""", reply_markup=kb)
 
 @dp.callback_query_handler(text='raschet')
 async def raschetCMD(call: types.CallbackQuery):
@@ -138,7 +138,7 @@ async def raschetFSMCMD(message: types.Message, state: FSMContext):
         return
     
     if not (message.text.isnumeric()):
-        await message.answer("Сообщение джно состоять только из цифр!", reply_markup=kb)
+        await message.answer("Сообщение должно состоять только из цифр!", reply_markup=kb)
         return
     
     db = await aiosqlite.connect('data.db')
@@ -235,6 +235,7 @@ async def dostCMD(call: types.CallbackQuery, state: FSMContext):
         poizon = int(data["poizon"])
         msk = data['msk']
 
+
     await state.finish()
 
     cursor = await db.execute("SELECT value FROM data WHERE key='доставка_по_китаю'")
@@ -250,12 +251,13 @@ async def dostCMD(call: types.CallbackQuery, state: FSMContext):
     kom = await cursor.fetchone()
     kom = int(kom[0])
 
-    cursor = await db.execute("SELECT value FROM data WHERE key='доставка_по_рф'")
-    rf = await cursor.fetchone()
-    rf = int(rf[0])
+    cursor = await db.execute("SELECT value FROM data WHERE key='процент_предоплаты'")
+    pred = await cursor.fetchone()
+    pred = int(pred[0]) / 100
 
 
-    summa = poizon + china + msk + (poizon // 100 * strah) + kom + rf
+
+    summa = poizon + china + msk + (poizon // 100 * strah) + kom + pr 
 
 
     cursor = await db.execute("SELECT value FROM data WHERE key='ссылка_на_владельца'")
@@ -274,10 +276,10 @@ async def dostCMD(call: types.CallbackQuery, state: FSMContext):
 - Доставка до склада в Москве {msk} руб.
 - Страховка {strah}% - {poizon // 100 * strah} руб.
 - Комиссия сервиса {kom} руб.
-- Доставка по РФ {rf} руб.
+- Доставка по РФ {pr} руб.
 
 Общая стоимость заказа: {summa} руб.
-Предоплата: {int(summa * 0.3)} руб.
+Предоплата: {int(summa * pred)} руб.
 
 Комиссию можно снизить до {kom - 300} рублей, подробности уточняйте у операторов :)
 Обращаем Ваше внимание: расчет актуален в течение часа, т.к. на Poizon цены часто меняются""", reply_markup=kb)
@@ -302,7 +304,7 @@ async def endCallCMD(call: types.CallbackQuery):
     
 
 @dp.callback_query_handler(text="otmena", state=raschetFSM)
-async def otmenaRaschetFSM(message: types.Message, state: FSMContext):
+async def otmenaRaschetFSM(call: types.CallbackQuery, state: FSMContext):
 
 
     await state.finish()
@@ -323,7 +325,7 @@ async def otmenaRaschetFSM(message: types.Message, state: FSMContext):
     faq = await cursor.fetchone()
     faq = faq[0]
 
-    await message.answer("Выберите нужное действие:", reply_markup=startKB(owner=owner, otzivi=otzivi, faq=faq))
+    await call.message.answer("Выберите нужное действие:", reply_markup=startKB(owner=owner, otzivi=otzivi, faq=faq))
 
     await db.close()
 
